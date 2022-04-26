@@ -1,0 +1,15 @@
+---
+title: "GWAS Analysis"
+author: "LucianoRogerio"
+date: "2022-04-26"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+## Introduction
+
+```{r}
+
+```
+

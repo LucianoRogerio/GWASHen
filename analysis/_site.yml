@@ -5,6 +5,14 @@ navbar:
   left:
   - text: Home
     href: index.html
+  - text: Sections
+    menu:
+    - text: "Prepare Phenotypic Data"
+      href: PhenData.html
+    - text: "Prepare Genotypic Data"
+      href: GenData.html
+    - text: "GWAS Analysis"
+      href: GWAS.html
   - text: About
     href: about.html
   - text: License

@@ -1,11 +1,19 @@
 ---
-title: "Home"
+title: "GWAS for Foliar Disease in Cassava"
 site: workflowr::wflow_site
 output:
   workflowr::wflow_html:
     toc: false
 editor_options:
-  chunk_output_type: console
+  chunk_output_type: inline
 ---
 
-Welcome to my research website.
+This repository is the workflow of the Second chapter of Jose Henrique Bernardino Nascimento.
+The Second Chapter has the objective of locating QTL in cassava genome related to resistance/tolerance to Foliar diseases of Cassava.
+
+This workflow is separate in the following sections:
+
+1. [Prepare Phenotypic Data](PhenData.html)
+2. [Prepare Genotypic Data](GenData.html)
+3. [GWAS Analysis](GWAS.html)
+4. []

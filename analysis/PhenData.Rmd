@@ -1,0 +1,56 @@
+---
+title: "Prepare Phenotypic Data"
+author: "LucianoRogerio"
+date: "2022-04-26"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+In this Section we will obtain the deregressed BLUPs and BLUPs for each clone evaluated to tolerance to Foliar Disease in Cassava.
+
+## Packages required
+
+```{r read the packages}
+library(here)
+library(tidyverse)
+library(sommer)
+library(reshape2)
+```
+
+## Read and prepare the Phenotypic data for the Mixed Models Analysis
+
+```{r Read the Phenotypic data}
+PhenoData <- readRDS(file = here::here("data", "DadosFenotipicos.RDS")) %>%
+  mutate(block_number = as.character(block_number))
+checks <- names(table(PhenoData$accession_name))[table(PhenoData$accession_name) > 20]
+PhenoData <- PhenoData %>% mutate(check = ifelse(accession_name %in% checks,
+                                                 yes = accession_name,
+                                                 no = "999"),
+                                  new = ifelse(accession_name %in% checks,
+                                               yes = 0,
+                                               no = 1))
+
+PhenoData2 <- PhenoData %>% reshape2::melt(data = ., id.vars = c(1:6),
+                                           variable.name = "Trait",
+                                           value.name = "y") %>% 
+  filter(!is.na(y))
+head(PhenoData)
+```
+
+
+## Mixed Models
+
+```{r Mixed Models, eval = FALSE}
+NCT <- 5
+RhpcBLASctl::blas_set_num_threads(NCT)
+MM <-  mmer(fixed = cbind(Anthractnose, ManchaBranca, ManchaParda, QueimaFolhas) ~ block_number + check,
+            random = ~ accession_name:new, getPEV = T, data = PhenoData)
+MM$AIC
+#946.3573
+
+MM <-  mmer(fixed = c(Anthractnose, ManchaBranca, ManchaParda, QueimaFolhas) ~ block_number,
+            random = ~ accession_name, getPEV = T, data = PhenoData)
+
+```
+
