@@ -16,25 +16,23 @@ library(here)
 library(tidyverse)
 library(sommer)
 library(reshape2)
+library(data.table)
 ```
 
 ## Read and prepare the Phenotypic data for the Mixed Models Analysis
 
 ```{r Read the Phenotypic data}
-PhenoData <- readRDS(file = here::here("data", "DadosFenotipicos.RDS")) %>%
-  mutate(block_number = as.character(block_number))
-checks <- names(table(PhenoData$accession_name))[table(PhenoData$accession_name) > 20]
-PhenoData <- PhenoData %>% mutate(check = ifelse(accession_name %in% checks,
-                                                 yes = accession_name,
-                                                 no = "999"),
-                                  new = ifelse(accession_name %in% checks,
-                                               yes = 0,
-                                               no = 1))
+PhenoData <- read.table(file = here::here("data", "DadosDoencasBAG2021-22Henr.csv"),
+                        header = T, sep = ",") %>%
+  mutate(block_number = as.character(block_number),
+         Year = ifelse(trial_name == "BR.PTBAG.20.Candeal", yes = "20", no = "21")) %>% 
+  mutate(YearRep = paste(Year, block_number, sep = ".")) %>% 
+  dplyr::select(1:13, Year, YearRep, everything())
 
-PhenoData2 <- PhenoData %>% reshape2::melt(data = ., id.vars = c(1:6),
+PhenoData2 <- PhenoData %>% reshape2::melt(data = ., id.vars = c(1:15),
                                            variable.name = "Trait",
-                                           value.name = "y") %>% 
-  filter(!is.na(y))
+                                           value.name = "Value") %>% 
+  filter(!is.na(Value)) %>% rename(GID = accession_name)
 head(PhenoData)
 ```
 
@@ -42,15 +40,38 @@ head(PhenoData)
 ## Mixed Models
 
 ```{r Mixed Models, eval = FALSE}
+library(sommer); library(data.table)
+library(tidyverse)
 NCT <- 5
 RhpcBLASctl::blas_set_num_threads(NCT)
-MM <-  mmer(fixed = cbind(Anthractnose, ManchaBranca, ManchaParda, QueimaFolhas) ~ block_number + check,
-            random = ~ accession_name:new, getPEV = T, data = PhenoData)
+MM <- mmer(fixed = cbind(Anthractnose, ManchaBranca, ManchaParda, QueimaFolhas) ~ 1,
+           random = ~ accession_name + YearRep, getPEV = T, data = PhenoData)
 MM$AIC
-#946.3573
+#1394.834
+#946.3573?
 
-MM <-  mmer(fixed = c(Anthractnose, ManchaBranca, ManchaParda, QueimaFolhas) ~ block_number,
+load("output/MMResults.RData")
+anova(MM)
+MM <-  mmer(fixed = cbind(Anthractnose, ManchaBranca, ManchaParda, QueimaFolhas) ~ block_number,
             random = ~ accession_name, getPEV = T, data = PhenoData)
 
+Nmean <- PhenoData %>% count(accession_name) %>% summarize(mean(n))
+
+CompVar <- tibble(Trait = unique(MM$Beta$Trait) %>% as.character,
+                  Vg = MM$sigma$`accession_name:new` %>% diag %>% as.vector,
+                  Ve = MM$sigma$units %>% diag %>% as.vector,
+                  H2 = Vg/(Vg + (Ve/Nmean[[1]])))
+
+Blups <- tibble(Trait = unique(MM$Beta$Trait) %>% as.character) %>%
+  mutate(Estimate = list(tibble(clones = names(MM$U$`accession_name:new`[[Trait[[1]]]]) %>%
+                                  gsub(pattern = "accession_name", replacement = "") %>%
+                                  gsub(pattern = ":new", replacement = ""),
+                                BLUP = MM$U$`accession_name`[[Trait[[1]]]],
+                                PEV = diag(MM$PevU$`accession_name`[[Trait[[1]]]],),
+                                REL = 1 - PEV/CompVar[CompVar$Trait == Trait[[1]], "Vg"][[1]],
+                                drgBLUP = BLUP/REL,
+                                WT = (1 - CompVar[CompVar$Trait == Trait[[1]], "H2"][[1]])/((0.1 + (1 - REL)/REL)*CompVar[CompVar$Trait == Trait[[1]], "H2"][[1]]))))
+
+saveRDS(Blups, file = here::here("output", ""))
 ```
 
