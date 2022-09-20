@@ -42,8 +42,85 @@ head(PhenoData)
 ```{r Mixed Models, eval = FALSE}
 library(sommer); library(data.table)
 library(tidyverse)
+
+tiff(filename = here::here("output", "DataBar.tiff"), compression = "lzw",
+     units = "cm", res = 200, width = 12, height = 10)
+PhenoData2 %>% ggplot(aes(x = Value, fill = Trait)) + geom_bar() + facet_wrap(~Trait) + theme_bw()
+dev.off()
+
+
+
 NCT <- 5
-RhpcBLASctl::blas_set_num_threads(NCT)
+RhpcBLASctl ::blas_set_num_threads(NCT)
+MM <- mmer(fixed = Anthractnose ~ block_number,
+           random = ~ accession_name,
+           data = PhenoData %>% filter(Year == "21"))
+
+MM2 <- mmer(fixed = ManchaBranca ~ block_number,
+           random = ~ accession_name,
+           data = PhenoData %>% filter(Year == "21"))
+
+MM3 <- mmer(fixed = ManchaParda ~ block_number,
+           random = ~ accession_name,
+           data = PhenoData %>% filter(Year == "21"))
+
+MM4 <- mmer(fixed = QueimaFolhas ~ block_number,
+           random = ~ accession_name,
+           data = PhenoData %>% filter(Year == "21"))
+
+
+Blups <- tibble(Clones = MM$U$accession_name$Anthractnose %>% names,
+  Anth = MM$U$accession_name$Anthractnose)
+
+Blups2  <- tibble(Clones = MM2$U$accession_name$ManchaBranca %>% names,
+  MB = MM2$U$accession_name$ManchaBranca)
+
+Blups3  <- tibble(Clones = MM3$U$accession_name$ManchaParda %>% names,
+  MP = MM3$U$accession_name$ManchaParda)
+
+Blups4  <- tibble(Clones = MM4$U$accession_name$QueimaFolhas %>% names,
+  QF = MM4$U$accession_name$QueimaFolhas)
+
+BlupsF <- Blups %>% full_join(Blups2, by = "Clones") %>% 
+  full_join(Blups3, by = "Clones") %>% 
+  full_join(Blups4, by = "Clones") %>% 
+  mutate(Clones = gsub(x = Clones, pattern = "accession_name",
+                       replacement = ""))
+
+write.table(BlupsF, file = here::here("output", "Blups.csv"), sep = ",",
+            quote = F, row.names = F)
+
+BlupsF2 <- BlupsF %>% reshape2::melt(value.name = "y", id.vars = "Clones",
+                                     variable.name = "Trait")
+
+tiff(filename = here::here("output", "BlupsDensity.tiff"), compression = "lzw",
+     units = "cm", res = 200, width = 12, height = 10)
+BlupsF2 %>% ggplot(aes(x = y, fill = Trait)) + geom_density() + facet_wrap(~Trait) + theme_bw()
+dev.off()
+
+Manchas22 <- tibble(Trait = "Ant",
+                    VarG = MM$sigma$accession_name,
+                    VarE = MM$sigma$units,
+                    H2 = VarG/(VarE + VarG)) %>% 
+  bind_rows(tibble(Trait = "MB",
+                    VarG = MM2$sigma$accession_name,
+                    VarE = MM2$sigma$units,
+                    H2 = VarG/(VarE + VarG))) %>% 
+  bind_rows(tibble(Trait = "MP",
+                    VarG = MM3$sigma$accession_name,
+                    VarE = MM3$sigma$units,
+                    H2 = VarG/(VarE + VarG))) %>% 
+              bind_rows(tibble(Trait = "QF",
+                    VarG = MM4$sigma$accession_name,
+                    VarE = MM4$sigma$units,
+                    H2 = VarG/(VarE + VarG)))
+
+write.table(Manchas22, file = here::here("output", "herdabilidadesHen.csv"), sep = ",",
+            quote = F, row.names = F)
+
+BlupsF
+
+
 MM <- mmer(fixed = cbind(Anthractnose, ManchaBranca, ManchaParda, QueimaFolhas) ~ 1,
            random = ~ accession_name + YearRep, getPEV = T, data = PhenoData)
 MM$AIC
