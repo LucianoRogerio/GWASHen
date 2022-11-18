@@ -15,7 +15,7 @@
 
 <title>Prepare Phenotypic Data</title>
 
-<script src="site_libs/header-attrs-2.14/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.18/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
@@ -156,11 +156,15 @@ $(document).ready(function () {
     href = "index.html";
   var menuAnchor = $('a[href="' + href + '"]');
 
-  // mark it active
-  menuAnchor.tab('show');
-
-  // if it's got a parent navbar menu mark it active as well
-  menuAnchor.closest('li.dropdown').addClass('active');
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
 
   // Navbar adjustments
   var navHeight = $(".navbar").first().height() + 15;
@@ -189,8 +193,8 @@ $(document).ready(function () {
   border-radius: 4px;
 }
 
-.tabset-dropdown > .nav-tabs > li.active:before {
-  content: "";
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
   font-family: 'Glyphicons Halflings';
   display: inline-block;
   padding: 10px;
@@ -198,16 +202,9 @@ $(document).ready(function () {
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-  content: "&#xe258;";
-  border: none;
-}
-
-.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-  content: "";
+  content: "\e258";
   font-family: 'Glyphicons Halflings';
-  display: inline-block;
-  padding: 10px;
-  border-right: 1px solid #ddd;
+  border: none;
 }
 
 .tabset-dropdown > .nav-tabs > li.active {
@@ -381,7 +378,9 @@ div.tocify {
 
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
-<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span>
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span>
 </button>
 </p>
 <div id="workflowr-report" class="collapse">
@@ -390,7 +389,9 @@ div.tocify {
 <a data-toggle="tab" href="#summary">Summary</a>
 </li>
 <li>
-<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> </a>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+</a>
 </li>
 <li>
 <a data-toggle="tab" href="#versions">Past versions</a>
@@ -399,17 +400,27 @@ div.tocify {
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2022-04-26
+<strong>Last updated:</strong> 2022-11-17
 </p>
 <p>
-<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 1
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 0
 </p>
 <p>
-<strong>Knit directory:</strong> <code>GWASHen/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
+<strong>Knit directory:</strong> <code>GWASHen/</code> <span
+class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
 </p>
 <p>
-This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a> analysis was created with <a
-  href="https://github.com/workflowr/workflowr">workflowr</a> (version 1.7.0). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.0). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
 </p>
 <hr>
 </div>
@@ -418,112 +429,154 @@ This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a> analysi
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges"> <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted changes </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date
+</a>
 </p>
 </div>
-<div id="strongRMarkdownfilestronguncommittedchanges" class="panel-collapse collapse">
+<div id="strongRMarkdownfilestronguptodate"
+class="panel-collapse collapse">
 <div class="panel-body">
-<p>The R Markdown is untracked by Git. To know which version of the R Markdown file created these results, you’ll want to first commit it to the Git repo. If you’re still working on the analysis, you can ignore this warning. When you’re finished, you can run <code>wflow_publish</code> to commit the R Markdown file and build the HTML.</p>
+<p>Great! Since the R Markdown file has been committed to the Git
+repository, you know the exact version of the code that produced these
+results.</p>
 </div>
 </div>
 </div>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
 </p>
 </div>
 <div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
 <div class="panel-body">
-<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
 </div>
 </div>
 </div>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20220426code"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Seed:</strong> <code>set.seed(20220426)</code> </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20220426code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20220426)</code> </a>
 </p>
 </div>
-<div id="strongSeedstrongcodesetseed20220426code" class="panel-collapse collapse">
+<div id="strongSeedstrongcodesetseed20220426code"
+class="panel-collapse collapse">
 <div class="panel-body">
-<p>The command <code>set.seed(20220426)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+<p>The command <code>set.seed(20220426)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
 </div>
 </div>
 </div>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Session information:</strong> recorded </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
 </p>
 </div>
-<div id="strongSessioninformationstrongrecorded" class="panel-collapse collapse">
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
 <div class="panel-body">
-<p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
 </div>
 </div>
 </div>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
 </p>
 </div>
 <div id="strongCachestrongnone" class="panel-collapse collapse">
 <div class="panel-body">
-<p>Nice! There were no cached chunks for this analysis, so you can be confident that you successfully produced the results during this run.</p>
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
 </div>
 </div>
 </div>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
 </p>
 </div>
 <div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
 <div class="panel-body">
-<p>Great job! Using relative paths to the files within your workflowr project makes it easier to run your code on other machines.</p>
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
 </div>
 </div>
 </div>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomLucianoRogerioGWASHentree2d385fa4c9d9996a4985560691f0392b9c86effatargetblank2d385faa"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/LucianoRogerio/GWASHen/tree/2d385fa4c9d9996a4985560691f0392b9c86effa" target="_blank">2d385fa</a> </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomLucianoRogerioGWASHentree541da34c80bbbb63bd24d9584b56c260f9da8705targetblank541da34a">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/LucianoRogerio/GWASHen/tree/541da34c80bbbb63bd24d9584b56c260f9da8705" target="_blank">541da34</a>
+</a>
 </p>
 </div>
-<div id="strongRepositoryversionstrongahrefhttpsgithubcomLucianoRogerioGWASHentree2d385fa4c9d9996a4985560691f0392b9c86effatargetblank2d385faa" class="panel-collapse collapse">
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomLucianoRogerioGWASHentree541da34c80bbbb63bd24d9584b56c260f9da8705targetblank541da34a"
+class="panel-collapse collapse">
 <div class="panel-body">
 <p>
-Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
 </p>
 <p>
-The results in this page were generated with repository version <a href="https://github.com/LucianoRogerio/GWASHen/tree/2d385fa4c9d9996a4985560691f0392b9c86effa" target="_blank">2d385fa</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+The results in this page were generated with repository version
+<a href="https://github.com/LucianoRogerio/GWASHen/tree/541da34c80bbbb63bd24d9584b56c260f9da8705" target="_blank">541da34</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
 </p>
 <p>
-Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
 </p>
 <pre><code>
 Ignored files:
     Ignored:    .Rproj.user/
 
 Untracked files:
-    Untracked:  .DS_Store
-    Untracked:  analysis/GWAS.Rmd
-    Untracked:  analysis/GenData.Rmd
-    Untracked:  analysis/PhenData.Rmd
-    Untracked:  code/MixedModelsFunctions.R
-    Untracked:  data/DadosFenotipicos.RDS
-    Untracked:  data/DadosGBSAtualizadosRenomeados.rds
+    Untracked:  output/GWASDoencasMkrs.rds
 
 Unstaged changes:
-    Modified:   analysis/_site.yml
-    Modified:   analysis/index.Rmd
+    Modified:   analysis/GenData.Rmd
 
 </code></pre>
 <p>
-Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
 </p>
 </div>
 </div>
@@ -532,112 +585,332 @@ Note that any generated files, e.g. HTML, png, CSS, etc., are not included in t
 <hr>
 </div>
 <div id="versions" class="tab-pane fade">
+
 <p>
-There are no past versions. Publish this analysis with <code>wflow_publish()</code> to start tracking its development.
+These are the previous versions of the repository in which changes were
+made to the R Markdown (<code>analysis/PhenData.Rmd</code>) and HTML
+(<code>docs/PhenData.html</code>) files. If you’ve configured a remote
+Git repository (see <code>?wflow_git_remote</code>), click on the
+hyperlinks in the table below to view the files as they were in that
+past version.
 </p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/LucianoRogerio/GWASHen/blob/541da34c80bbbb63bd24d9584b56c260f9da8705/analysis/PhenData.Rmd" target="_blank">541da34</a>
+</td>
+<td>
+LucianoRogerio
+</td>
+<td>
+2022-11-17
+</td>
+<td>
+Rm small lines
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/LucianoRogerio/GWASHen/blob/d39a3cd0998d187b3847d27161d97e46f4178cf9/analysis/PhenData.Rmd" target="_blank">d39a3cd</a>
+</td>
+<td>
+LucianoRogerio
+</td>
+<td>
+2022-11-17
+</td>
+<td>
+Blups prontos
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/LucianoRogerio/GWASHen/blob/e3b02183bf0cec1a2e793b8f31d5ad3978b33225/analysis/PhenData.Rmd" target="_blank">e3b0218</a>
+</td>
+<td>
+LucianoRogerio
+</td>
+<td>
+2022-09-27
+</td>
+<td>
+Remove analysis required by Eder
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/LucianoRogerio/GWASHen/blob/c2a3ed9adcb1b32c5f38e06f0f29fcfa84044c04/analysis/PhenData.Rmd" target="_blank">c2a3ed9</a>
+</td>
+<td>
+LucianoRogerio
+</td>
+<td>
+2022-09-20
+</td>
+<td>
+Ajuda Henrique
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/LucianoRogerio/GWASHen/blob/73593980648191ef6fc390a181b6987c18777ab7/analysis/PhenData.Rmd" target="_blank">7359398</a>
+</td>
+<td>
+LucianoRogerio
+</td>
+<td>
+2022-06-29
+</td>
+<td>
+Data update and deregression analysis
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/LucianoRogerio/GWASHen/blob/9700608961cfb423b9c7fa3a0bf895cb1281e671/analysis/PhenData.Rmd" target="_blank">9700608</a>
+</td>
+<td>
+LucianoRogerio
+</td>
+<td>
+2022-04-26
+</td>
+<td>
+First Mixed Models Analysis
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/LucianoRogerio/GWASHen/9700608961cfb423b9c7fa3a0bf895cb1281e671/docs/PhenData.html" target="_blank">9700608</a>
+</td>
+<td>
+LucianoRogerio
+</td>
+<td>
+2022-04-26
+</td>
+<td>
+First Mixed Models Analysis
+</td>
+</tr>
+</tbody>
+</table>
+</div>
 <hr>
 </div>
 </div>
 </div>
-<p>In this Section we will obtain the deregressed BLUPs and BLUPs for each clone evaluated to tolerance to Foliar Disease in Cassava.</p>
+<p>In this Section we will obtain the deregressed BLUPs and BLUPs for
+each clone evaluated to tolerance to Foliar Disease in Cassava.</p>
 <div id="packages-required" class="section level2">
 <h2>Packages required</h2>
 <pre class="r"><code>library(here)</code></pre>
-<pre><code>here() starts at /Users/lbd54/Documents/GitHub/GWASHen</code></pre>
+<pre><code>here() starts at /Users/luciano/Documents/GitHub/GWASHen</code></pre>
 <pre class="r"><code>library(tidyverse)</code></pre>
-<pre><code>── Attaching packages ─────────────────────────────────────── tidyverse 1.3.1 ──</code></pre>
-<pre><code>✔ ggplot2 3.3.5     ✔ purrr   0.3.4
-✔ tibble  3.1.6     ✔ dplyr   1.0.8
-✔ tidyr   1.2.0     ✔ stringr 1.4.0
-✔ readr   2.1.2     ✔ forcats 0.5.1</code></pre>
-<pre><code>── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+<pre><code>── Attaching packages
+───────────────────────────────────────
+tidyverse 1.3.2 ──</code></pre>
+<pre><code>✔ ggplot2 3.4.0      ✔ purrr   0.3.5 
+✔ tibble  3.1.8      ✔ dplyr   1.0.10
+✔ tidyr   1.2.1      ✔ stringr 1.4.1 
+✔ readr   2.1.3      ✔ forcats 0.5.2 
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
 ✖ dplyr::filter() masks stats::filter()
 ✖ dplyr::lag()    masks stats::lag()</code></pre>
 <pre class="r"><code>library(sommer)</code></pre>
-<pre><code>Loading required package: Matrix</code></pre>
-<pre><code>
-Attaching package: &#39;Matrix&#39;</code></pre>
-<pre><code>The following objects are masked from &#39;package:tidyr&#39;:
+<pre><code>Loading required package: Matrix
 
-    expand, pack, unpack</code></pre>
-<pre><code>Loading required package: MASS</code></pre>
-<pre><code>
-Attaching package: &#39;MASS&#39;</code></pre>
-<pre><code>The following object is masked from &#39;package:dplyr&#39;:
+Attaching package: &#39;Matrix&#39;
 
-    select</code></pre>
-<pre><code>Loading required package: lattice</code></pre>
-<pre><code>Loading required package: crayon</code></pre>
-<pre><code>
-Attaching package: &#39;crayon&#39;</code></pre>
-<pre><code>The following object is masked from &#39;package:ggplot2&#39;:
+The following objects are masked from &#39;package:tidyr&#39;:
+
+    expand, pack, unpack
+
+Loading required package: MASS
+
+Attaching package: &#39;MASS&#39;
+
+The following object is masked from &#39;package:dplyr&#39;:
+
+    select
+
+Loading required package: lattice
+Loading required package: crayon
+
+Attaching package: &#39;crayon&#39;
+
+The following object is masked from &#39;package:ggplot2&#39;:
 
     %+%</code></pre>
 <pre class="r"><code>library(reshape2)</code></pre>
 <pre><code>
-Attaching package: &#39;reshape2&#39;</code></pre>
-<pre><code>The following object is masked from &#39;package:tidyr&#39;:
+Attaching package: &#39;reshape2&#39;
+
+The following object is masked from &#39;package:tidyr&#39;:
 
     smiths</code></pre>
-</div>
-<div id="read-and-prepare-the-phenotypic-data-for-the-mixed-models-analysis" class="section level2">
-<h2>Read and prepare the Phenotypic data for the Mixed Models Analysis</h2>
-<pre class="r"><code>PhenoData &lt;- readRDS(file = here::here(&quot;data&quot;, &quot;DadosFenotipicos.RDS&quot;)) %&gt;%
-  mutate(block_number = as.character(block_number))
-checks &lt;- names(table(PhenoData$accession_name))[table(PhenoData$accession_name) &gt; 20]
-PhenoData &lt;- PhenoData %&gt;% mutate(check = ifelse(accession_name %in% checks,
-                                                 yes = accession_name,
-                                                 no = &quot;999&quot;),
-                                  new = ifelse(accession_name %in% checks,
-                                               yes = 0,
-                                               no = 1))
+<pre class="r"><code>library(data.table)</code></pre>
+<pre><code>
+Attaching package: &#39;data.table&#39;
 
-PhenoData2 &lt;- PhenoData %&gt;% reshape2::melt(data = ., id.vars = c(1:6),
-                                           variable.name = &quot;Trait&quot;,
-                                           value.name = &quot;y&quot;) %&gt;% 
-  filter(!is.na(y))
-head(PhenoData)</code></pre>
-<pre><code>   accession_name plant_number plot_number block_number talhao_number Idade
-1 BRS-Poti Branca            1           2            1             1    16
-2 BRS-Poti Branca            2           2            1             1    16
-3 BRS-Poti Branca            3           2            1             1    16
-4     BR-11-34-41            1           9            1             1    16
-5     BR-11-34-41            2           9            1             1    16
-6     BR-11-34-41            3           9            1             1    16
-  Anthractnose ManchaBranca ManchaParda QueimaFolhas           check new
-1            1            2           3            3 BRS-Poti Branca   0
-2            1            0           3            3 BRS-Poti Branca   0
-3            1            1           3            3 BRS-Poti Branca   0
-4            2            0           3            3     BR-11-34-41   0
-5            3            0           3            3     BR-11-34-41   0
-6            3            1           3            3     BR-11-34-41   0</code></pre>
+The following objects are masked from &#39;package:reshape2&#39;:
+
+    dcast, melt
+
+The following objects are masked from &#39;package:dplyr&#39;:
+
+    between, first, last
+
+The following object is masked from &#39;package:purrr&#39;:
+
+    transpose</code></pre>
+</div>
+<div
+id="read-and-prepare-the-phenotypic-data-for-the-mixed-models-analysis"
+class="section level2">
+<h2>Read and prepare the Phenotypic data for the Mixed Models
+Analysis</h2>
+<pre class="r"><code>PhenoData &lt;- read.table(file = here::here(&quot;data&quot;, &quot;DadosDoencasBAG2021-22Henr.csv&quot;),
+                        header = T, sep = &quot;,&quot;) %&gt;%
+  mutate(block_number = as.character(block_number),
+         Year = ifelse(trial_name == &quot;BR.PTBAG.20.Candeal&quot;, yes = &quot;20&quot;, no = &quot;21&quot;)) %&gt;% 
+  mutate(YearRep = factor(paste(Year, block_number, sep = &quot;.&quot;))) %&gt;% 
+  dplyr::select(1:13, Year, YearRep, everything())
+
+PhenoData2 &lt;- tibble(Trait = PhenoData %&gt;% colnames %&gt;% tail(., 4),
+                     PhenoData = list(tibble(PhenoData)))
+
+PhenoData2$PhenoData[[1]] %&lt;&gt;% dplyr::select(-ManchaBranca, -ManchaParda,
+                                             -QueimaFolhas) %&gt;%
+  dplyr::mutate(y = Anthractnose, .keep = &quot;unused&quot;)
+PhenoData2$PhenoData[[2]] %&lt;&gt;% dplyr::select(-Anthractnose, -ManchaParda,
+                                             -QueimaFolhas) %&gt;%
+  dplyr::mutate(y = ManchaBranca, .keep = &quot;unused&quot;)
+PhenoData2$PhenoData[[3]] %&lt;&gt;% dplyr::select(-Anthractnose, -ManchaBranca,
+                                             -QueimaFolhas) %&gt;%
+  dplyr::mutate(y = ManchaParda, .keep = &quot;unused&quot;)
+PhenoData2$PhenoData[[4]] %&lt;&gt;% dplyr::select(-Anthractnose, -ManchaBranca,
+                                             -ManchaParda) %&gt;%
+  dplyr::mutate(y = QueimaFolhas, .keep = &quot;unused&quot;)
+
+
+head(PhenoData2)</code></pre>
+<pre><code># A tibble: 4 × 2
+  Trait        PhenoData            
+  &lt;chr&gt;        &lt;list&gt;               
+1 Anthractnose &lt;tibble [6,405 × 16]&gt;
+2 ManchaBranca &lt;tibble [6,405 × 16]&gt;
+3 ManchaParda  &lt;tibble [6,405 × 16]&gt;
+4 QueimaFolhas &lt;tibble [6,405 × 16]&gt;</code></pre>
 </div>
 <div id="mixed-models" class="section level2">
 <h2>Mixed Models</h2>
-<pre class="r"><code>NCT &lt;- 5
-RhpcBLASctl::blas_set_num_threads(NCT)
-MM &lt;-  mmer(fixed = cbind(Anthractnose, ManchaBranca, ManchaParda, QueimaFolhas) ~ block_number + check,
-            random = ~ accession_name:new, getPEV = T, data = PhenoData)
-MM$AIC
-#946.3573
+<pre class="r"><code>library(sommer); library(data.table); library(furrr)
+library(tidyverse); library(magrittr)
 
-MM &lt;-  mmer(fixed = c(Anthractnose, ManchaBranca, ManchaParda, QueimaFolhas) ~ block_number,
-            random = ~ accession_name, getPEV = T, data = PhenoData)</code></pre>
+plan(multisession, workers = 2)
+
+PhenoData3 &lt;- PhenoData2 %&gt;%
+  dplyr::mutate(MixMod=future_map2(Trait,PhenoData, function(Trait,PhenoData,...){
+    cat(&quot;\n&quot;, &quot;\n&quot;, &quot;Trait &quot;, Trait)
+    MM &lt;- mmer(fixed = y ~ 1,
+               random = ~ accession_name + YearRep, getPEV = T, data = PhenoData)
+    results &lt;- tibble(clones = names(MM$U$accession_name$y) %&gt;%
+                        gsub(pattern = &quot;accession_name&quot;, replacement = &quot;&quot;),
+                      BLUP = MM$U$accession_name$y,
+                      PEV = diag(MM$PevU$accession_name$y),
+                      REL = 1 - PEV/MM$sigma$accession_name[,&quot;y&quot;],
+                      drgBLUP = BLUP/REL)
+    return(list(MixedModel = MM,
+                Results = results))
+  }))
+
+plan(sequential)
+
+Clones &lt;- PhenoData3$MixMod[[1]]$Results %&gt;% dplyr::select(clones)
+
+
+for (i in 2:4) {
+  Clones &lt;- Clones %&gt;% bind_rows(PhenoData3$MixMod[[i]]$Results %&gt;% 
+                                   dplyr::select(clones)) %&gt;% unique()
+}
+
+Blups &lt;- Clones
+drgBlups &lt;- Clones
+
+for (i in 1:4) {
+  Blups %&lt;&gt;% left_join(PhenoData3$MixMod[[i]]$Results %&gt;% 
+    dplyr::select(clones, BLUP))
+  colnames(Blups)[ncol(Blups)] &lt;- paste0(&quot;trait&quot;,i)
+  drgBlups %&lt;&gt;% left_join(PhenoData3$MixMod[[i]]$Results %&gt;% 
+    dplyr::select(clones, drgBLUP))
+  colnames(drgBlups)[ncol(drgBlups)] &lt;- paste0(&quot;trait&quot;,i)
+}
+
+colnames(Blups)[2:ncol(Blups)] &lt;- colnames(drgBlups)[2:ncol(drgBlups)] &lt;- PhenoData3$Trait
+
+write.table(Blups, file = here::here(&quot;output&quot;, &quot;BlupsDoencas.csv&quot;),
+            quote = F, sep = &quot;,&quot;, row.names = F)
+write.table(drgBlups, file = here::here(&quot;output&quot;, &quot;drgBlupsDoencas.csv&quot;),
+            quote = F, sep = &quot;,&quot;, row.names = F)</code></pre>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
-<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Session information
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
 </button>
 </p>
 <div id="workflowr-sessioninfo" class="collapse">
 <pre class="r"><code>sessionInfo()</code></pre>
-<pre><code>R version 4.1.2 (2021-11-01)
+<pre><code>R version 4.2.1 (2022-06-23)
 Platform: aarch64-apple-darwin20 (64-bit)
-Running under: macOS Big Sur 11.6.5
+Running under: macOS Ventura 13.0.1
 
 Matrix products: default
-BLAS:   /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/lib/libRblas.0.dylib
-LAPACK: /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/lib/libRlapack.dylib
+BLAS:   /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/lib/libRblas.0.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/lib/libRlapack.dylib
 
 locale:
 [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
@@ -646,28 +919,36 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
- [1] reshape2_1.4.4  sommer_4.1.6    crayon_1.5.1    lattice_0.20-45
- [5] MASS_7.3-57     Matrix_1.4-1    forcats_0.5.1   stringr_1.4.0  
- [9] dplyr_1.0.8     purrr_0.3.4     readr_2.1.2     tidyr_1.2.0    
-[13] tibble_3.1.6    ggplot2_3.3.5   tidyverse_1.3.1 here_1.0.1     
+ [1] data.table_1.14.4 reshape2_1.4.4    sommer_4.2.0      crayon_1.5.2     
+ [5] lattice_0.20-45   MASS_7.3-58.1     Matrix_1.5-3      forcats_0.5.2    
+ [9] stringr_1.4.1     dplyr_1.0.10      purrr_0.3.5       readr_2.1.3      
+[13] tidyr_1.2.1       tibble_3.1.8      ggplot2_3.4.0     tidyverse_1.3.2  
+[17] here_1.0.1       
 
 loaded via a namespace (and not attached):
- [1] Rcpp_1.0.8.3     lubridate_1.8.0  assertthat_0.2.1 rprojroot_2.0.3 
- [5] digest_0.6.29    utf8_1.2.2       plyr_1.8.7       R6_2.5.1        
- [9] cellranger_1.1.0 backports_1.4.1  reprex_2.0.1     evaluate_0.15   
-[13] httr_1.4.2       pillar_1.7.0     rlang_1.0.2      readxl_1.4.0    
-[17] rstudioapi_0.13  jquerylib_0.1.4  rmarkdown_2.14   munsell_0.5.0   
-[21] broom_0.8.0      compiler_4.1.2   httpuv_1.6.5     modelr_0.1.8    
-[25] xfun_0.30        pkgconfig_2.0.3  htmltools_0.5.2  tidyselect_1.1.2
-[29] workflowr_1.7.0  fansi_1.0.3      tzdb_0.3.0       dbplyr_2.1.1    
-[33] withr_2.5.0      later_1.3.0      grid_4.1.2       jsonlite_1.8.0  
-[37] gtable_0.3.0     lifecycle_1.0.1  DBI_1.1.2        git2r_0.30.1    
-[41] magrittr_2.0.3   scales_1.2.0     cli_3.3.0        stringi_1.7.6   
-[45] fs_1.5.2         promises_1.2.0.1 xml2_1.3.3       bslib_0.3.1     
-[49] ellipsis_0.3.2   generics_0.1.2   vctrs_0.4.1      tools_4.1.2     
-[53] glue_1.6.2       hms_1.1.1        fastmap_1.1.0    yaml_2.3.5      
-[57] colorspace_2.0-3 rvest_1.0.2      knitr_1.38       haven_2.5.0     
-[61] sass_0.4.1      </code></pre>
+ [1] Rcpp_1.0.9          lubridate_1.9.0     assertthat_0.2.1   
+ [4] rprojroot_2.0.3     digest_0.6.30       utf8_1.2.2         
+ [7] plyr_1.8.8          R6_2.5.1            cellranger_1.1.0   
+[10] backports_1.4.1     reprex_2.0.2        evaluate_0.18      
+[13] httr_1.4.4          pillar_1.8.1        rlang_1.0.6        
+[16] readxl_1.4.1        googlesheets4_1.0.1 rstudioapi_0.14    
+[19] whisker_0.4         jquerylib_0.1.4     rmarkdown_2.18     
+[22] googledrive_2.0.0   munsell_0.5.0       broom_1.0.1        
+[25] compiler_4.2.1      httpuv_1.6.6        modelr_0.1.10      
+[28] xfun_0.34           pkgconfig_2.0.3     htmltools_0.5.3    
+[31] tidyselect_1.2.0    workflowr_1.7.0     fansi_1.0.3        
+[34] withr_2.5.0         tzdb_0.3.0          dbplyr_2.2.1       
+[37] later_1.3.0         grid_4.2.1          jsonlite_1.8.3     
+[40] gtable_0.3.1        lifecycle_1.0.3     DBI_1.1.3          
+[43] git2r_0.30.1        magrittr_2.0.3      scales_1.2.1       
+[46] cli_3.4.1           stringi_1.7.8       cachem_1.0.6       
+[49] fs_1.5.2            promises_1.2.0.1    xml2_1.3.3         
+[52] bslib_0.4.1         ellipsis_0.3.2      generics_0.1.3     
+[55] vctrs_0.5.0         tools_4.2.1         glue_1.6.2         
+[58] hms_1.1.2           fastmap_1.1.0       yaml_2.3.6         
+[61] timechange_0.1.1    colorspace_2.0-3    gargle_1.2.1       
+[64] rvest_1.0.3         knitr_1.40          haven_2.5.1        
+[67] sass_0.4.2         </code></pre>
 </div>
 </div>
 

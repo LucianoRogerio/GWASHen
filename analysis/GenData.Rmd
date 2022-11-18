@@ -9,7 +9,25 @@ editor_options:
 
 ## Introduction
 
-```{r}
+```{r, eval = F}
+library(tidyverse); library(data.table); library(magrittr)
 
+GWASMkr <- readRDS(file = here::here("data", "DadosGBSAtualizadosRenomeados.rds"))
+ClonesGWAS <- rownames(GWASMkr)
+ClonesGWAS[ClonesGWAS == "BRS-NovoHorizonte"] <- "BRS-Novo-Horizonte"
+rownames(GWASMkr) <- ClonesGWAS
+
+Blups <- read.table(file = here::here("output", "BlupsDoencas.csv"), header = T, sep = ",")
+
+GWASMkrSel <- GWASMkr[rownames(GWASMkr) %in% Blups$clones,] %>% .[!rownames(.) %>% duplicated(),]
+
+freq <- colMeans(GWASMkrSel)/2
+for(i in 1:length(freq)){
+  if(freq[i] > 0.5){
+    freq[i] <- 1 - freq[i]
+  }
+  }
+GWASMkrSel %<>% .[,freq >= 0.05]
+saveRDS(GWASMkrSel, file = here::here("output", "GWASDoencasMkrs.rds"))
 ```
 
