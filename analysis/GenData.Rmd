@@ -1,5 +1,5 @@
 ---
-title: "Prepare Phenotypic Data"
+title: "Prepare Genotypic Data"
 author: "LucianoRogerio"
 date: "2022-04-26"
 output: workflowr::wflow_html

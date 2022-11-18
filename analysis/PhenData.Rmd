@@ -26,53 +26,83 @@ PhenoData <- read.table(file = here::here("data", "DadosDoencasBAG2021-22Henr.cs
                         header = T, sep = ",") %>%
   mutate(block_number = as.character(block_number),
          Year = ifelse(trial_name == "BR.PTBAG.20.Candeal", yes = "20", no = "21")) %>% 
-  mutate(YearRep = paste(Year, block_number, sep = ".")) %>% 
+  mutate(YearRep = factor(paste(Year, block_number, sep = "."))) %>% 
   dplyr::select(1:13, Year, YearRep, everything())
 
-PhenoData2 <- PhenoData %>% reshape2::melt(data = ., id.vars = c(1:15),
-                                           variable.name = "Trait",
-                                           value.name = "Value") %>% 
-  filter(!is.na(Value)) %>% rename(GID = accession_name)
-head(PhenoData)
+PhenoData2 <- tibble(Trait = PhenoData %>% colnames %>% tail(., 4),
+                     PhenoData = list(tibble(PhenoData)))
+
+PhenoData2$PhenoData[[1]] %<>% dplyr::select(-ManchaBranca, -ManchaParda,
+                                             -QueimaFolhas) %>%
+  dplyr::mutate(y = Anthractnose, .keep = "unused")
+PhenoData2$PhenoData[[2]] %<>% dplyr::select(-Anthractnose, -ManchaParda,
+                                             -QueimaFolhas) %>%
+  dplyr::mutate(y = ManchaBranca, .keep = "unused")
+PhenoData2$PhenoData[[3]] %<>% dplyr::select(-Anthractnose, -ManchaBranca,
+                                             -QueimaFolhas) %>%
+  dplyr::mutate(y = ManchaParda, .keep = "unused")
+PhenoData2$PhenoData[[4]] %<>% dplyr::select(-Anthractnose, -ManchaBranca,
+                                             -ManchaParda) %>%
+  dplyr::mutate(y = QueimaFolhas, .keep = "unused")
+
+
+head(PhenoData2)
 ```
 
 
 ## Mixed Models
 
 ```{r Mixed Models, eval = FALSE}
-library(sommer); library(data.table)
-library(tidyverse)
+library(sommer); library(data.table); library(furrr)
+library(tidyverse); library(magrittr)
 
-NCT <- 5
-RhpcBLASctl ::blas_set_num_threads(NCT)
-MM <- mmer(fixed = cbind(Anthractnose, ManchaBranca, ManchaParda, QueimaFolhas) ~ 1,
-           random = ~ accession_name + YearRep, getPEV = T, data = PhenoData)
-MM$AIC
-#1394.834
-#946.3573?
+plan(multisession, workers = 2)
 
-load("output/MMResults.RData")
-anova(MM)
-MM <-  mmer(fixed = cbind(Anthractnose, ManchaBranca, ManchaParda, QueimaFolhas) ~ block_number,
-            random = ~ accession_name, getPEV = T, data = PhenoData)
+PhenoData3 <- PhenoData2 %>%
+  dplyr::mutate(MixMod=future_map2(Trait,PhenoData, function(Trait,PhenoData,...){
+    cat("\n", "\n", "Trait ", Trait)
+    MM <- mmer(fixed = y ~ 1,
+               random = ~ accession_name + YearRep, getPEV = T, data = PhenoData)
+    results <- tibble(clones = names(MM$U$accession_name$y) %>%
+                        gsub(pattern = "accession_name", replacement = ""),
+                      BLUP = MM$U$accession_name$y,
+                      PEV = diag(MM$PevU$accession_name$y),
+                      REL = 1 - PEV/MM$sigma$accession_name[,"y"],
+                      drgBLUP = BLUP/REL)
+    return(list(MixedModel = MM,
+                Results = results))
+  }))
 
-Nmean <- PhenoData %>% count(accession_name) %>% summarize(mean(n))
+plan(sequential)
 
-CompVar <- tibble(Trait = unique(MM$Beta$Trait) %>% as.character,
-                  Vg = MM$sigma$`accession_name:new` %>% diag %>% as.vector,
-                  Ve = MM$sigma$units %>% diag %>% as.vector,
-                  H2 = Vg/(Vg + (Ve/Nmean[[1]])))
+#saveRDS(PhenoData3, file = here::here("output", "KeepGoing.RDS"))
+PhenoData3 <- readRDS(file = here::here("output", "KeepGoing.RDS"))
 
-Blups <- tibble(Trait = unique(MM$Beta$Trait) %>% as.character) %>%
-  mutate(Estimate = list(tibble(clones = names(MM$U$`accession_name:new`[[Trait[[1]]]]) %>%
-                                  gsub(pattern = "accession_name", replacement = "") %>%
-                                  gsub(pattern = ":new", replacement = ""),
-                                BLUP = MM$U$`accession_name`[[Trait[[1]]]],
-                                PEV = diag(MM$PevU$`accession_name`[[Trait[[1]]]],),
-                                REL = 1 - PEV/CompVar[CompVar$Trait == Trait[[1]], "Vg"][[1]],
-                                drgBLUP = BLUP/REL,
-                                WT = (1 - CompVar[CompVar$Trait == Trait[[1]], "H2"][[1]])/((0.1 + (1 - REL)/REL)*CompVar[CompVar$Trait == Trait[[1]], "H2"][[1]]))))
+Clones <- PhenoData3$MixMod[[1]]$Results %>% dplyr::select(clones)
 
-saveRDS(Blups, file = here::here("output", ""))
+
+for (i in 2:4) {
+  Clones <- Clones %>% bind_rows(PhenoData3$MixMod[[i]]$Results %>% 
+                                   dplyr::select(clones)) %>% unique()
+}
+
+Blups <- Clones
+drgBlups <- Clones
+
+for (i in 1:4) {
+  Blups %<>% left_join(PhenoData3$MixMod[[i]]$Results %>% 
+    dplyr::select(clones, BLUP))
+  colnames(Blups)[ncol(Blups)] <- paste0("trait",i)
+  drgBlups %<>% left_join(PhenoData3$MixMod[[i]]$Results %>% 
+    dplyr::select(clones, drgBLUP))
+  colnames(drgBlups)[ncol(drgBlups)] <- paste0("trait",i)
+}
+
+colnames(Blups)[2:ncol(Blups)] <- colnames(drgBlups)[2:ncol(drgBlups)] <- PhenoData3$Trait
+
+write.table(Blups, file = here::here("output", "BlupsDoencas.csv"),
+            quote = F, sep = ",", row.names = F)
+write.table(drgBlups, file = here::here("output", "drgBlupsDoencas.csv"),
+            quote = F, sep = ",", row.names = F)
 ```
 
