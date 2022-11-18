@@ -75,9 +75,6 @@ PhenoData3 <- PhenoData2 %>%
 
 plan(sequential)
 
-#saveRDS(PhenoData3, file = here::here("output", "KeepGoing.RDS"))
-PhenoData3 <- readRDS(file = here::here("output", "KeepGoing.RDS"))
-
 Clones <- PhenoData3$MixMod[[1]]$Results %>% dplyr::select(clones)
 
 
